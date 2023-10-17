@@ -1,0 +1,37 @@
+version: "3.7"
+services:
+    pocketbase:
+        image: ghcr.io/muchobien/pocketbase:latest
+        container_name: pocketbase
+        restart: unless-stopped
+        command:
+            - --encryptionEnv #optional
+            - ENCRYPTION #optional
+        environment:
+            ENCRYPTION: example #optional
+        ports:
+            - "8090:8090"
+        volumes:
+            - ./pb/pb_data:/pb/pb_data
+            - ./pb/pb_migrations:/pb/pb_migrations
+            - ./pb/public:/pb/pb_public #optional
+        healthcheck: #optional (recommended) since v0.10.0
+            test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
+            interval: 5s
+            timeout: 5s
+    web:
+        build: ./planner-client
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./planner-client/src:/app/src
+            - ./planner-client/.svelte-kit/:/app/.svelte-kit/
+    nginx:
+        image: nginx:alpine
+        ports:
+            - "80:80"
+        volumes:
+            - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+        depends_on:
+            - web
+            - pocketbase
