@@ -35,3 +35,7 @@ services:
         depends_on:
             - web
             - pocketbase
+volumes:
+    pb_data:
+    pb_migrations:
+    pb_public: #optional
